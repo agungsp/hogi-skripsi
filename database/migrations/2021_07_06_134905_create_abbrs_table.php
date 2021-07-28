@@ -16,7 +16,7 @@ class CreateAbbrsTable extends Migration
         Schema::create('abbrs', function (Blueprint $table) {
             $table->id();
             $table->string('word')->unique();
-            $table->string('mean')->unique();
+            $table->string('mean')->nullable();
             $table->integer('batch')->default(0);
             $table->timestamps();
         });
