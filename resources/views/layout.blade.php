@@ -30,6 +30,12 @@
             overflow-x: hidden !important;
         }
 
+        .container-groupname {
+            height: 50vh;
+            overflow: auto;
+            overflow-x: hidden !important;
+        }
+
         /* width */
         ::-webkit-scrollbar {
             width: 0.7rem;

@@ -7,12 +7,14 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Helpers\NaiveBayes;
 use App\Helpers\Translate;
 use App\Imports\DataTraining;
+use App\Imports\DataUji;
 use App\Models\FullTextClass;
 use App\Models\Abbr;
 use Illuminate\Support\Facades\Cache;
 use App\Helpers\Stemmer;
 use App\Rules\minWords;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -26,7 +28,11 @@ class HomeController extends Controller
 
     public function index(Request $request)
     {
-        return view('home');
+        $classifiedSummary = FullTextClass::groupBy(['filename', 'class'])
+                             ->select(['filename', 'class', DB::raw('count(`class`) as `count`')])
+                             ->get()
+                             ->groupBy('filename');
+        return view('home', compact('classifiedSummary'));
     }
 
     public function inputDataTraining(Request $request)
@@ -35,9 +41,11 @@ class HomeController extends Controller
             'dataTraining' => ['required', 'file', 'mimes:xlsx']
         ]);
 
+        $filename = pathinfo($request->dataTraining->getClientOriginalName(), PATHINFO_FILENAME);
+
         FullTextClass::truncate();
 
-        Excel::import(new DataTraining, $request->dataTraining);
+        Excel::import(new DataTraining($filename), $request->dataTraining);
 
         return redirect()->back();
     }
@@ -45,22 +53,14 @@ class HomeController extends Controller
     public function inputText(Request $request)
     {
         $request->validate([
-            'textArea' => [new minWords(3)]
+            'dataUji' => ['required', 'file', 'mimes:xlsx']
         ]);
 
-        $dataTraining = FullTextClass::all()->toArray();
-        $naiveBayes = new NaiveBayes();
-        $naiveBayes->setClass(['positif', 'negatif']);
-        $naiveBayes->training($dataTraining);
-        $normalizeText = Stemmer::normalize($request->textArea);
-        $predict = $naiveBayes->predict($normalizeText);
-        FullTextClass::create([
-            'text' => $normalizeText,
-            'class' => $predict
-        ]);
+        $filename = pathinfo($request->dataUji->getClientOriginalName(), PATHINFO_FILENAME);
 
-        return redirect()->route('home.index')->with('isNewImput', true);
-        // return view('home', compact('predict'));
+        Excel::import(new DataUji($filename), $request->dataUji);
+
+        return redirect()->route('home.index');
     }
 
     public function classifiedWords(Request $request)
@@ -68,7 +68,7 @@ class HomeController extends Controller
         $maxData = 10;
         $lastId = $request->lastId;
         if ($request->order == 'desc' && $request->lastId == 0) {
-            $lastId = FullTextClass::latest()->first()->id + 1;
+            $lastId = FullTextClass::latest()->first()->id ?? -1 + 1;
         }
 
         $operator = '>';

@@ -2,7 +2,7 @@
     <div class="card mb-3 shadow">
         <div class="card-body">
             <div class="d-block d-flex justify-content-between">
-                <small class="text-muted">{{ $row->created_at->format('d/m/Y H:i:s') }} - #{{ $row->id }}</small>
+                <small class="text-muted">{{ $row->created_at->format('d/m/Y H:i:s') }} - #{{ $row->id }} - {{ $row->filename }}</small>
                 @if ($row->class === 'positif')
                     <i class="fas fa-plus-square fa-lg text-success"></i>
                 @else

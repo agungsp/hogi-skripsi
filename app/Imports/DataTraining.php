@@ -9,6 +9,12 @@ use App\Helpers\Stemmer;
 
 class DataTraining implements ToCollection
 {
+    private $filename;
+
+    public function __construct($filename) {
+        $this->filename = $filename;
+    }
+
     /**
     * @param Collection $collection
     */
@@ -19,7 +25,8 @@ class DataTraining implements ToCollection
             $normalize = Stemmer::normalize($row[0]);
             FullTextClass::create([
                 'text' => $normalize,
-                'class' => $row[1]
+                'class' => $row[1],
+                'filename' => $this->filename
             ]);
         }
     }

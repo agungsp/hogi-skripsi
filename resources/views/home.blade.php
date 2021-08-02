@@ -17,57 +17,87 @@
 @section('content')
     <div class="row mt-3">
         <div class="col-6">
-            <ul class="nav nav-tabs d-flex justify-content-center" id="myTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">
-                        Data Uji
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">
-                        Data Training
-                    </button>
-                </li>
-            </ul>
-            <div class="tab-content" id="myTabContent">
-                <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-                    <div class="card shadow">
-                        <div class="card-body">
-                            <form action="{{ route('home.inputText') }}" method="post">
-                                @csrf
-                                <div class="mb-3">
-                                    <label class="form-label" for="words">Masukkan kalimat</label>
-                                    <textarea class="form-control" name="textArea" id="textArea" cols="30" rows="5" style="resize: none;" autofocus></textarea>
+            <div class="row mb-3">
+                <div class="col">
+                    <ul class="nav nav-tabs d-flex justify-content-center" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @if (\App\Models\FullTextClass::count() > 0) active @else disabled @endif" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">
+                                Data Uji
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @if (\App\Models\FullTextClass::count() == 0) active @endif" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">
+                                Data Training
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade @if (\App\Models\FullTextClass::count() > 0) show active @endif" id="home" role="tabpanel" aria-labelledby="home-tab">
+                            <div class="card shadow">
+                                <div class="card-body">
+                                    <form action="{{ route('home.inputText') }}" method="post" enctype="multipart/form-data">
+                                        @csrf
+                                        <div class="mb-3">
+                                            <label class="form-label" for="dataUji">File Data Uji</label>
+                                            <input class="form-control" type="file" name="dataUji" id="dataUji" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span id="dataUjiTimer" class="small" data-second="0">0 sec</span>
+                                            <button class="btn btn-primary float-end" type="submit" id="submitDataUji" onclick="timer('dataUji')">
+                                                Submit
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
-                                <div class="row">
-                                    <div class="col">
-                                        <span class="small" id="wordCounterDisplay">
-                                            0 word
-                                        </span>
-                                    </div>
-                                    <div class="col-auto">
-                                        <button class="btn btn-primary float-end" type="submit" id="submitText">Submit</button>
-                                    </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade @if (\App\Models\FullTextClass::count() == 0) show active @endif" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                            <div class="card shadow">
+                                <div class="card-body">
+                                    <form action="{{ route('home.inputDataTraining') }}" method="post" enctype="multipart/form-data">
+                                        @csrf
+                                        <div class="mb-3">
+                                            <label class="form-label" for="dataTraining">File Data Training</label>
+                                            <input class="form-control" type="file" name="dataTraining" id="dataTraining" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span id="dataTrainingTimer" class="small" data-second="0">0 sec</span>
+                                            <button class="btn btn-primary float-end" type="submit" id="submitDataTraining" onclick="timer('dataTraining')">
+                                                Submit
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                    <div class="card shadow">
-                        <div class="card-body">
-                            <form action="{{ route('home.inputDataTraining') }}" method="post" enctype="multipart/form-data">
-                                @csrf
-                                <div class="mb-3">
-                                    <label class="form-label" for="dataTraining">File Data Training</label>
-                                    <input class="form-control" type="file" name="dataTraining" id="dataTraining" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+            </div>
+            <div class="row">
+                <div class="col container-groupname">
+                    @forelse ($classifiedSummary as $key => $values)
+                        <div class="card shadow mb-2">
+                            <div class="card-body row">
+                                <div class="col">
+                                    {{ $key }}
                                 </div>
-                                <button class="btn btn-primary float-end" type="submit" id="submitDataTraining">
-                                    Submit
-                                </button>
-                            </form>
+                                @foreach ($values->sortByDesc('class') as $value)
+                                    <div class="col text-end">
+                                        <span class="d-block small">
+                                            {{ ucwords($value->class) }}
+                                        </span>
+                                        <span class="d-block fs-2">
+                                            {{ $value->count }}
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
-                    </div>
+                    @empty
+                        <p class="text-center mt-4">
+                            Data not found!
+                        </p>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -137,13 +167,15 @@
         */
         let lastId, hasNext, showed;
         let loading;
-        let textArea,
-            wordCounterDisplay,
-            classifiedWords,
+        let classifiedWords,
             dateStart,
             dateEnd,
             order,
-            btnMore;
+            btnMore,
+            dataTrainingTimer,
+            submitDataTraining,
+            dataUjiTimer,
+            submitDataUji;
         /*
          +------------------------------------------------
          | End Variable Section
@@ -162,20 +194,18 @@
 
             loading = $('#loading');
 
-            textArea = $('#textArea');
-            wordCounterDisplay = $('#wordCounterDisplay');
             classifiedWords = $('#classifiedWords');
             dateStart = $('#dateStart');
             dateEnd = $('#dateEnd');
             order = $('#order');
             btnMore = $('#btnMore');
+            dataTrainingTimer = $('#dataTrainingTimer');
+            submitDataTraining = $('#submitDataTraining');
+            dataUjiTimer = $('#dataUjiTimer');
+            submitDataUji = $('#submitDataUji');
         }
 
         function initOnChangeEvent() {
-            textArea.on('change', function () {
-                wordCounter();
-            });
-
             dateStart.on('change', function () {
                 dateEnd.attr('min', dateStart.val());
                 if (dateStart.val() > dateEnd.val()) {
@@ -204,9 +234,7 @@
         }
 
         function initOnKeyupEvent() {
-            textArea.on('keyup', function (e) {
-                wordCounter();
-            });
+
         }
 
         function initOnClick() {
@@ -232,6 +260,33 @@
         function wordCounter() {
             let wordsArray = textArea.val().split(" ");
             wordCounterDisplay.html(`${wordsArray.length} ${(wordsArray.length > 1 ? 'words' : 'word')}`);
+        }
+
+        function timer(key) {
+            let button, timer;
+            switch (key) {
+                case 'dataUji':
+                        button = submitDataUji;
+                        timer = dataUjiTimer;
+                    break;
+                case 'dataTraining':
+                        button = submitDataTraining;
+                        timer = dataTrainingTimer;
+                    break;
+            }
+            button.addClass('disabled');
+            button.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading..');
+            setInterval(() => {
+                let hour, minute, second, text;
+                let dataSecond = parseInt(timer.attr('data-second'));
+                dataSecond++;
+                hour = Math.floor(dataSecond / (60 * 60));
+                minute = Math.floor(dataSecond / 60);
+                second = dataSecond % 60;
+                text = `${ hour > 0 ? hour + ' h,' : '' } ${ minute > 0 ? minute + ' m,' : '' } ${second} s`;
+                timer.attr('data-second', dataSecond);
+                timer.html(text);
+            }, 1000);
         }
 
         function loadingToggle() {
