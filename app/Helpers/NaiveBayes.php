@@ -205,8 +205,10 @@ class NaiveBayes
         }
 
         foreach ($testClass as $key => $value) {
-            foreach ($value['computed'] as $val) {
-                $testClass[$key]['result'] *= $val;
+            if (isset($value['computed'])) {
+                foreach ($value['computed'] as $val) {
+                    $testClass[$key]['result'] *= $val;
+                }
             }
         }
 

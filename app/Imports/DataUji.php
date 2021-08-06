@@ -24,16 +24,23 @@ class DataUji implements ToCollection
     {
         $naiveBayes = new NaiveBayes();
         $naiveBayes->setClass(['positif', 'negatif']);
+        $newData = array();
+
         foreach ($rows as $row) {
             $dataTraining = FullTextClass::all()->toArray();
             $naiveBayes->training($dataTraining);
             $normalizeText = Stemmer::normalize($row[0]);
             $predict = $naiveBayes->predict($normalizeText);
-            FullTextClass::create([
+
+            array_push($newData, [
                 'text' => $normalizeText,
                 'class' => $predict,
                 'filename' => $this->filename
             ]);
+        }
+
+        foreach ($newData as $data) {
+            FullTextClass::create($data);
         }
     }
 }

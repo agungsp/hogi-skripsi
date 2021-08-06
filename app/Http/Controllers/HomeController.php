@@ -24,6 +24,7 @@ class HomeController extends Controller
             Cache::put('abbrs', $abbrs, now()->addYear());
         }
         ini_set('max_execution_time', 0);
+        ini_set('memory_limit', -1);
     }
 
     public function index(Request $request)
