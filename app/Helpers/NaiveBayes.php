@@ -219,7 +219,13 @@ class NaiveBayes
 
         $max = max($result);
         foreach ($testClass as $key => $item) {
-            if ($item['result'] === $max) return $key;
+            if ($item['result'] === $max) return [
+                'class' => $key,
+                'result' => [
+                    'positif' => $testClass['positif']['result'],
+                    'negatif' => $testClass['negatif']['result'],
+                ]
+            ];
         }
 
         return false;

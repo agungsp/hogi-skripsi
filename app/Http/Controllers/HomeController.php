@@ -82,7 +82,7 @@ class HomeController extends Controller
 
         $query = FullTextClass::where('created_at', '>=', $dateStart)
                               ->where('created_at', '<', $dateEnd)
-                              ->where('id', $operator, $lastId)
+                              ->where('id', '<', $lastId)
                               ->limit($maxData)
                               ->orderBy('created_at', $request->order);
 

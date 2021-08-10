@@ -98,8 +98,13 @@
 
     @yield('modal')
 
-    <script src="{{ asset('jquery/jquery.js') }}"></script>
     <script src="{{ asset('bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script>
+        var popover = new bootstrap.Popover(document.querySelector('.popover-dismiss'), {
+            trigger: 'focus'
+        });
+    </script>
+    <script src="{{ asset('jquery/jquery.js') }}"></script>
     <script>
         $(document).ready(() => {
             $.ajaxSetup({

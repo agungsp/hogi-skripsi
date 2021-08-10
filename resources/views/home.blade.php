@@ -103,37 +103,7 @@
         </div>
         <div class="col-6 container-result">
             <h3>Result</h3>
-            <div class="card mb-3 shadow">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col">
-                            <div class="small mb-2">
-                                Start
-                            </div>
-                            <input type="date" name="dateStart" id="dateStart"
-                                   class="form-control" value="{{ now()->day(1)->toDateString() }}"
-                                   max="{{ now()->toDateString() }}">
-                        </div>
-                        <div class="col">
-                            <div class="small mb-2">
-                                End
-                            </div>
-                            <input type="date" name="dateEnd" id="dateEnd"
-                                   class="form-control" value="{{ now()->toDateString() }}"
-                                   min="{{ now()->day(1)->toDateString() }}">
-                        </div>
-                        <div class="col">
-                            <div class="small mb-2">
-                                Order By
-                            </div>
-                            <select class="form-select" name="order" id="order">
-                                <option value="asc">Asc</option>
-                                <option value="desc" selected>Desc</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <a tabindex="0" class="btn btn-lg btn-danger" role="button" data-bs-toggle="popover" data-bs-trigger="focus" title="Dismissible popover" data-bs-content="And here's some amazing content. It's very engaging. Right?">Dismissible popover</a>
 
             <div id="classifiedWords"></div>
             <div id="loading" class="row justify-content-center d-none">
@@ -192,45 +162,18 @@
             hasNext = false;
             showed = 0;
 
-            loading = $('#loading');
+            loading = document.querySelector('#loading');
 
-            classifiedWords = $('#classifiedWords');
-            dateStart = $('#dateStart');
-            dateEnd = $('#dateEnd');
-            order = $('#order');
-            btnMore = $('#btnMore');
-            dataTrainingTimer = $('#dataTrainingTimer');
-            submitDataTraining = $('#submitDataTraining');
-            dataUjiTimer = $('#dataUjiTimer');
-            submitDataUji = $('#submitDataUji');
+            classifiedWords = document.querySelector('#classifiedWords');
+            btnMore = document.querySelector('#btnMore');
+            dataTrainingTimer = document.querySelector('#dataTrainingTimer');
+            submitDataTraining = document.querySelector('#submitDataTraining');
+            dataUjiTimer = document.querySelector('#dataUjiTimer');
+            submitDataUji = document.querySelector('#submitDataUji');
         }
 
         function initOnChangeEvent() {
-            dateStart.on('change', function () {
-                dateEnd.attr('min', dateStart.val());
-                if (dateStart.val() > dateEnd.val()) {
-                    dateEnd.val(dateStart.val());
-                }
 
-                lastId = 0;
-                showed = 0;
-                hasNext = false;
-                getClassifiedWords();
-            });
-
-            dateEnd.on('change', function () {
-                lastId = 0;
-                showed = 0;
-                hasNext = false;
-                getClassifiedWords();
-            });
-
-            order.on('change', function () {
-                lastId = 0;
-                showed = 0;
-                hasNext = false;
-                getClassifiedWords();
-            });
         }
 
         function initOnKeyupEvent() {
@@ -238,9 +181,7 @@
         }
 
         function initOnClick() {
-            btnMore.on('click', function () {
-                getClassifiedWords(true);
-            });
+            btnMore.addEventListener('click', () => getClassifiedWords(true));
         }
 
         function initOnSubmitEvent(params) {
@@ -257,11 +198,6 @@
          | Function Section
          +------------------------------------------------
         */
-        function wordCounter() {
-            let wordsArray = textArea.val().split(" ");
-            wordCounterDisplay.html(`${wordsArray.length} ${(wordsArray.length > 1 ? 'words' : 'word')}`);
-        }
-
         function timer(key) {
             let button, timer;
             switch (key) {
@@ -274,45 +210,45 @@
                         timer = dataTrainingTimer;
                     break;
             }
-            button.addClass('disabled');
-            button.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading..');
+            button.classList.add('disabled');
+            button.innerHtml = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading..';
             setInterval(() => {
                 let hour, minute, second, text;
-                let dataSecond = parseInt(timer.attr('data-second'));
+                let dataSecond = parseInt(timer.getAttibute('data-second'));
                 dataSecond++;
                 hour = Math.floor(dataSecond / (60 * 60));
                 minute = Math.floor(dataSecond / 60);
                 second = dataSecond % 60;
                 text = `${ hour > 0 ? hour + ' h,' : '' } ${ minute > 0 ? minute + ' m,' : '' } ${second} s`;
-                timer.attr('data-second', dataSecond);
-                timer.html(text);
+                timer.setAttribute('data-second', dataSecond);
+                timer.innerHtml = text;
             }, 1000);
         }
 
         function loadingToggle() {
-            loading.toggleClass('d-none');
+            loading.classList.toggle('d-none');
         }
 
         function getClassifiedWords(append = false) {
             if (!append) {
-                classifiedWords.html('');
+                classifiedWords.innerHtml = '';
             }
             loadingToggle();
-            let query = `lastId=${lastId}&dateStart=${dateStart.val()}&dateEnd=${dateEnd.val()}&order=${order.val()}&showed=${showed}`;
+            let query = `lastId=${lastId}&showed=${showed}`;
             $.get(`{{ route('home.classifiedWords') }}?${query}`, function (response) {
                 if (append) {
-                    classifiedWords.append(response.html);
+                    classifiedWords.innerHtml += response.html;
                 } else {
-                    classifiedWords.html(response.html);
+                    classifiedWords.innerHtml = response.html;
                 }
                 loadingToggle();
                 lastId = response.lastId;
                 hasNext = response.hasNext;
                 showed += 10;
                 if (hasNext) {
-                    btnMore.removeClass('d-none');
+                    btnMore.classList.remove('d-none');
                 } else {
-                    btnMore.addClass('d-none');
+                    btnMore.classList.add('d-none');
                 }
             });
         }
